@@ -1,0 +1,108 @@
+USE [DESPLDBAZPAN]
+GO
+/****** Object:  StoredProcedure [dbo].[BatchBazCargaSaldosClientesCuentas]    Script Date: 02/22/2019 18:52:33 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER  PROCEDURE [dbo].[BatchBazCargaSaldosClientesCuentas] 
+AS
+
+DECLARE @FH_INI AS DATETIME
+DECLARE @FH_FIN AS DATETIME
+DECLARE @REGISTROS_AFECTADOS AS INT
+DECLARE @FECHAHORA  AS DATETIME
+DECLARE @PROCESO AS CHAR(50)
+SET @PROCESO = 'BatchBazCargaSaldosClientesCuentas'
+SET @FECHAHORA = GETDATE()
+
+EXEC InsertaBitacoraProcesos @PROCESO, 'INICIADO', @FECHAHORA, 0
+
+DECLARE @fh_inicio AS CHAR(10) 
+DECLARE @fh_fini AS CHAR(10) 
+DECLARE @query AS CHAR(2000)
+
+--DECLARE @BatchSaldos TABLE(
+-- Nu_Centro CHAR(4),
+-- Nu_Cuenta CHAR(10),
+-- Saldo_Cuenta DECIMAL(18,2), 
+-- Fh_Ultimo_Mov CHAR(10), 
+-- Status_Cuenta CHAR(1), 
+-- Cod_Producto CHAR(2), 
+-- Cod_Sub_Producto CHAR(4)
+--)
+
+--	SET @FH_INI =	 (SELECT FH_INI FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+--	SET @FH_FIN =	 (SELECT FH_FIN FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+
+--	SET @fh_inicio = CONVERT(CHAR(10), @FH_INI, 21)
+--	SET @fh_fini = CONVERT(CHAR(10), @FH_FIN, 21)
+
+
+--INSERT INTO @BatchSaldos (Nu_Centro, Nu_Cuenta, Saldo_Cuenta, Fh_Ultimo_Mov, Status_Cuenta, Cod_Producto, Cod_Sub_Producto)
+--SELECT 
+--	T041_CEN_REG[Nu_Centro],
+--	T041_ACC[Nu_Cuenta],
+--	T041_WDRWBAL[Saldo_Cuenta],
+--	T041_DAT_LASTOPE[Fh_Ultimo_Mov],
+--	T041_FLG_STATUS[Status_Cuenta],
+--	T041_COD_PRODUCT[Cod_Producto],
+--	T041_COD_SPROD[Cod_Sub_Producto]
+--FROM prodpanama.MAZP.MAZP.bgdt041 WITH(NOLOCK)
+--WHERE T041_DAT_LASTOPE BETWEEN @fh_inicio AND @fh_fini 
+
+
+--UPDATE b
+--SET b.saldo_cuenta = a.saldo_cuenta,
+--b.fh_ultimo_mov = a.fh_ultimo_mov,
+--b.Producto = a.cod_producto,
+--b.Subproducto = a.cod_sub_producto,
+--b.status_cuenta = a.status_cuenta
+--FROM @BatchSaldos a
+--LEFT JOIN tbl_saldoscuentas b WITH(NOLOCK)
+--ON b.nu_centro = a.nu_centro AND b.nu_cuenta = a.nu_cuenta
+
+
+
+--INSERT INTO tbl_saldoscuentas (Nu_Centro, Nu_Cuenta, Saldo_Cuenta, Fh_Ultimo_Mov, Status_Cuenta, Producto, SubProducto)
+--SELECT 
+--	Nu_Centro,
+--	Nu_Cuenta,
+--	Saldo_Cuenta, 
+--	Fh_Ultimo_Mov,
+--	Status_Cuenta, 
+--	Cod_Producto, 
+--	Cod_Sub_Producto
+--FROM @BatchSaldos a 
+--WHERE NOT EXISTS
+--(SELECT Nu_Centro, Nu_Cuenta FROM tbl_saldoscuentas b WITH(NOLOCK) WHERE a.nu_centro = b.Nu_Centro and a.Nu_Cuenta = b.Nu_Cuenta)
+
+--UPDATE A
+--SET a.Nu_Cliente = b.Nu_Cliente,
+--	  A.Fh_Apertura = b.Fh_Apertura
+--FROM dbo.tbl_SaldosCuentas a WITH(NOLOCK) 
+--LEFT JOIN dbo.tbl_CuentasClientes b WITH(NOLOCK) ON a.Nu_Cuenta = b.Nu_Cuenta AND a.Nu_Centro = b.Nu_Centro
+--WHERE A.nu_cliente IS NULL AND rol_asignado = 'T'
+
+
+--INSERT INTO tbl_SaldosCliente (Nu_Cliente)
+--SELECT DISTINCT Nu_Cliente
+--FROM tbl_SaldosCuentas a WITH(NOLOCK)
+--WHERE NOT EXISTS 
+--			(SELECT Nu_Cliente FROM tbl_SaldosCliente b WITH(NOLOCK) WHERE a.Nu_Cliente = b.Nu_Cliente)
+--AND Nu_Cliente IS NOT NULL
+
+--UPDATE A
+--SET A.SaldoCliente = (SELECT SUM(Saldo_Cuenta) FROM dbo.tbl_SaldosCuentas B WITH(NOLOCK)
+--WHERE A.Nu_cliente = B.Nu_Cliente
+--GROUP BY Nu_Cliente), A.NumeroCuentasCliente = (SELECT count(DISTINCT RTRIM(LTRIM(nu_centro))+RTRIM(LTRIM(nu_cuenta))) 
+--FROM dbo.tbl_SaldosCuentas B WITH(NOLOCK)
+--WHERE B.nu_cliente = A.Nu_cliente)
+--FROM tbl_SaldosCliente A WITH(NOLOCK) 
+--INNER JOIN dbo.tbl_SaldosCuentas B WITH(NOLOCK)
+--ON A.Nu_cliente = B.Nu_Cliente
+--WHERE convert(CHAR(10),fh_ultimo_mov,21) BETWEEN @fh_inicio AND @fh_fini 
+
+--SET @FECHAHORA = GETDATE()
+
+--EXEC InsertaBitacoraProcesos @PROCESO, 'FINALIZADO', @FECHAHORA, 0

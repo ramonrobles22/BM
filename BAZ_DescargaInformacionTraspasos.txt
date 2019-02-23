@@ -1,0 +1,88 @@
+    
+    
+CREATE PROCEDURE [dbo].[BAZ_DescargaInformacionTraspasos]          
+AS          
+          
+DECLARE @FH_INI AS Date          
+DECLARE @FH_FIN AS date          
+          
+SELECT @FH_INI = fh_ini , @fh_fin = fh_fin   FROM PLD_FECHASPROCESO WHERE ID_PRO='D'           
+        
+--set @FH_INI ='2016-12-01'         
+--set @FH_FIN ='2016-12-31'         
+Delete from  BAZ_MOVTOSTRASPASOS  where cast(FechaMod as DATE) between @FH_INI and @FH_FIN         
+          
+--insert into           
+--BAZ_MOVTOSTRASPASOS (          
+--RefCtaAbono,RefCtaCargo,CuentaAbono,CuentaCargo,MovCtaAbono,MovCtaCargo,MontoOpera,EstatusOpera,          
+--Divisa,Centro,Bandera1,Bandera2,Monto1,Monto2,Fecha1,Texto1,UsuarioMod,FechaMod)          
+          
+--select T111_REF_CREDIT,T111_REF_DEBIT  ,T111_ACC_CREDIT ,T111_ACC_DEBIT  ,T111_MOV_CREDIT ,T111_MOV_DEBIT ,           
+--T111_AMT,T111_STATUS_MOV ,T111_FCC,T111_CENT,T111_FLG_FREE1  ,T111_FLG_FREE2  ,          
+--T111_AMT_FREE1  ,T111_AMT_FREE2  ,T111_DAT_FREE,T111_TXT_FREE   ,T111_LASTMODUSER,          
+--substring(T111_TIMESTAMP,1,10)          
+--FROM PRODUCCION.MAZP.MAZP.BGDT111 WITH(NOLOCK)           
+--where substring(T111_TIMESTAMP,1,10) BETWEEN @FH_INI AND @FH_FIN           
+          
+          
+          
+update BAZ_MOVTOSTRASPASOS           
+set NumCtaAbono = substring(cuentaabono,5,4)+substring(cuentaabono,11,10),NumCtaCargo= substring(cuentacargo,5,4)+substring(cuentacargo,11,10)           
+where actualizado is null          
+          
+----ACTUALIZA NUMERO CLIENTE CARGO          
+update a set a.numctecargo = b.nu_cliente          
+from BAZ_MOVTOSTRASPASOS a with(nolock)          
+join TBL_CUENTASCLIENTES b with(nolock) on A.numctaCargo = B.nu_centro+B.nu_cuenta          
+where cast(FechaMod as DATE) between @FH_INI and @FH_FIN  and Actualizado is null and b.rol_asignado ='T'          
+          
+---ACTUALIZA NUMERO CLIENTE ABONO          
+update a set a. numcteAbono = b.nu_cliente          
+from BAZ_MOVTOSTRASPASOS a with(nolock)          
+join TBL_CUENTASCLIENTES b with(nolock) on A.numctaAbono = B.nu_centro+B.nu_cuenta          
+where cast(FechaMod as DATE) between @FH_INI and @FH_FIN  and Actualizado is null and b.rol_asignado ='T'          
+          
+----ACTUALIZA NOMBRE CLIENTE CARGO          
+update a set a.nombrectecargo = b.nombre + ' ' + B.ap_paterno + ' ' +b.ap_materno          
+from BAZ_MOVTOSTRASPASOS a with(nolock)          
+join TBL_CLIENTES b with(nolock) on A.numcteCargo = B.nu_cliente          
+where cast(FechaMod as DATE) between @FH_INI and @FH_FIN  and Actualizado is null          
+          
+----ACTUALIZA NOMBRE CLIENTE ABONO          
+update a set a.nombrecteabono = b.nombre + ' ' + B.ap_paterno + ' '+ b.ap_materno          
+from BAZ_MOVTOSTRASPASOS a with(nolock)          
+join TBL_CLIENTES b with(nolock) on A.numcteAbono = B.nu_cliente          
+where cast(FechaMod as DATE) between @FH_INI and @FH_FIN  and Actualizado is null          
+          
+------- ACTUALIZACION DE MOVIMIENTOS-------          
+          
+-------CARGO-------          
+          
+update  A set A.COD_OPERACION_CARGO = B.COD_OPERACION,           
+    A.PRODUCTO_CARGO = B.PRODUCTO,          
+    A.SUBPRODUCTO_CARGO = B.SUBPRODUCTO,          
+    A.MOVTOANULADO = B.MOVTOANULADO,          
+    A.TP_CARGO = B.TP_CARGOABONO,          
+    A.FH_OPERACION_CARGO = B.FH_OPERACION,          
+    A.HORAOPERACION_CARGO = B.HORAOPERACION,          
+    A.CENTRO_OP_CARGO = B.CENTRO_OPERANTE          
+from BAZ_MovtosTraspasos A WITH(NOLOCK)          
+JOIN TBL_MOVIMIENTOS_2016 B WITH(NOLOCK) ON a.numctacargo = B.nu_centro+B.nu_cuenta and a.movctacargo = B.nu_movimiento          
+where cast(FechaMod as DATE) between @FH_INI and @FH_FIN  and Actualizado is null          
+                      
+-------ABONO--------          
+                      
+update A set A.COD_OPERACION_ABONO = B.COD_OPERACION,           
+    A.PRODUCTO_ABONO = B.PRODUCTO,          
+    A.SUBPRODUCTO_ABONO = B.SUBPRODUCTO,          
+    A.MOVTOANULADO = B.MOVTOANULADO,          
+    A.TP_ABONO = B.TP_CARGOABONO,          
+    A.FH_OPERACION_ABONO = B.FH_OPERACION,          
+    A.HORAOPERACION_ABONO = B.HORAOPERACION,          
+    A.CENTRO_OP_ABONO = B.CENTRO_OPERANTE          
+from BAZ_MovtosTraspasos A WITH(NOLOCK)          
+JOIN TBL_MOVIMIENTOS_2018 B WITH(NOLOCK) ON a.NumCtaAbono = B.nu_centro+B.nu_cuenta and a.MovCtaAbono = B.nu_movimiento          
+where cast(FechaMod as DATE) between @FH_INI and @FH_FIN  and Actualizado is null          
+                      
+          
+update BAZ_MOVTOSTRASPASOS set actualizado = 1 where actualizado is null 

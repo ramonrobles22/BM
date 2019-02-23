@@ -1,0 +1,76 @@
+USE [DESPLDBAZPAN]
+GO
+/****** Object:  StoredProcedure [dbo].[BatchBazCargaTNacionales]    Script Date: 02/22/2019 18:53:24 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[BatchBazCargaTNacionales] 
+AS
+
+DECLARE @REGISTROS_AFECTADOS AS INT
+DECLARE @FECHAHORA  AS DATETIME
+DECLARE @PROCESO AS CHAR(25)
+DECLARE @FH_INI AS DATETIME
+DECLARE @FH_FIN AS DATETIME
+
+--	SET @PROCESO = 'BatchBazCargaTNacionales'
+--	SET @FECHAHORA = GETDATE()
+--	SET @FH_INI =	 (SELECT FH_INI FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+--	SET @FH_FIN =	 (SELECT FH_FIN FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+
+
+--EXEC InsertaBitacoraProcesos @PROCESO, 'INICIADO', @FECHAHORA, 0
+
+--DELETE tbl_TransferenciasNacionales WHERE fh_operacion between @FH_INI and @FH_FIN
+
+--INSERT INTO tbl_TransferenciasNacionales (Nu_Transaccion, ENT_ORIGEN,	Nu_ClienteOrigen, CENTRO_ORIGEN, CUENTA_ORIGEN, NOMBRE_ORIGEN, ENT_DESTINO, BANCO_DESTINO, 
+--Nu_ClienteDestino, CENTRO_DESTINO, CUENTA_DESTINO, NOMBRE_DESTINO, REFERENCIA, MN_IMPORTE, Fh_Operacion, T004_ADR, TipoOper, Divisa, Terminal, Operador, Centro_Operante)
+--	SELECT 
+--		T004_NUM_SEQOPE[NUMERO DE TRANSACCION], 
+--		T004_ENT_ORIGIN[ENT_ORIGEN], 
+--		''[nu_clienteOrigen],
+--		T004_BRN_ORIGIN[CENTRO ORIGEN],
+--		T004_ACC_ORIGIN[CUENTA ORIGEN],
+--		T004_DES_ASSIGNER[NOMBRE_ORIGEN], 
+--		T004_ENT_DEST[ENTIDAD DESTINO],
+--		T004_DES_RECVENT[BANCO DESTINO],
+--		''[nu_clienteDestino],
+--		T004_BRN_DEST[CENTRO DESTINO], 
+--		T004_ACC_NUMDEST[CUENTA DESTINO],
+--		T004_DES_BEN[NOMBRE DESTINO],
+--		T004_ITEM1[REFERENCIA], 
+--		T004_AMT_OPERATION[MN_IMPORTE],
+--		CONVERT(DATETIME,T004_DAT_OPERATION, 121)[FECHA OPER], 
+--		T004_ADR[T004_ADR], 
+--		T004_FLG_OPEST[TipoOper], 
+--		T004_FCC[DIVISA],
+--		T004_LASTMODTRM[TERMINAL],
+--		T004_REGUSER[OPERADOR], 
+--		T004_BRN_REG[CENTRO_OPERANTE]
+--	FROM prodpanama.MAZP.MAZP.FEDT004 WITH(NOLOCK)
+--	WHERE  T004_DAT_OPERATION between @FH_INI and @FH_FIN
+--	AND T004_FLG_OPEST IN ('T', 'I')
+	
+--	SET @REGISTROS_AFECTADOS = @@ROWCOUNT
+
+--	UPDATE a
+--	SET a.nu_clienteOrigen = b.nu_cliente
+--	FROM tbl_TransferenciasNacionales a WITH(NOLOCK)
+--	LEFT JOIN tbl_cuentasClientes b	WITH(NOLOCK)
+--		 ON (a.centro_origen = nu_centro and a.cuenta_origen = nu_cuenta)
+--	WHERE fh_operacion BETWEEN @FH_INI AND @FH_FIN
+--	AND b.nu_cliente IS NOT NULL
+	
+
+--	UPDATE a
+--	SET a.nu_clienteDestino = b.nu_cliente
+--	FROM tbl_TransferenciasNacionales a WITH(NOLOCK)
+--	LEFT JOIN tbl_cuentasClientes b	WITH(NOLOCK)
+--		 ON (a.centro_destino = nu_centro and a.cuenta_destino = nu_cuenta)
+--	WHERE fh_operacion BETWEEN @FH_INI AND @FH_FIN
+--	AND b.nu_cliente IS NOT NULL
+	
+--SET @FECHAHORA = GETDATE()
+--EXEC InsertaBitacoraProcesos @PROCESO, 'FINALIZADO', @FECHAHORA, @REGISTROS_AFECTADOS
+

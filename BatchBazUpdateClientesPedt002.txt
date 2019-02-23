@@ -1,0 +1,48 @@
+USE [DESPLDBAZPAN]
+GO
+/****** Object:  StoredProcedure [dbo].[BatchBazUpdateClientesPedt002]    Script Date: 02/22/2019 18:55:42 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER procedure [dbo].[BatchBazUpdateClientesPedt002]
+as
+
+DECLARE @FH_INI AS char(10)    
+DECLARE @FH_FIN AS char(10)    
+DECLARE @FH_PRO AS DATETIME   
+DECLARE @PROCESO AS CHAR(25)  
+DECLARE @REGISTROS_AFECTADOS AS INT =0
+DECLARE @FECHAHORA  AS DATETIME    
+Declare @query nvarchar(4000)
+
+SET @PROCESO = 'BatchBazUpdateClientesPedt002'    
+SET @FECHAHORA = GETDATE()    
+    
+EXEC InsertaBitacoraProcesos @PROCESO, 'INICIADO', @FECHAHORA, @REGISTROS_AFECTADOS   
+
+ SELECT @FH_INI=convert(char(10),FH_INI,21), @FH_FIN = convert(char(10),FH_FIN,21) FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D'    
+ 
+ 
+ set @query = N'
+  UPDATE b     
+   SET     
+    Cod_Nacionalidad = COD_PENAT,    
+    dirEmpresa =WORKPL,      
+    empresa = USLJOB,    
+    paisRes = COD_RESNAT,
+    lugar_nac = birthpl,    
+    cargo_puesto =usljob,      
+    email = e_mail,    
+    nit = RFC_TIT         
+  FROM prodpanama.MAZP.MAZP.pedt002 a WITH(NOLOCK)    
+  LEFT JOIN tbl_clientes b WITH(NOLOCK) ON (a.NUM_CUS = b.NU_CLIENTE) 
+  WHERE convert(char(10),DAT_CUSREG,21) BETWEEN '''+@FH_INI+''' AND '''+@FH_FIN+''''
+  
+exec sp_executesql @query 
+
+set @REGISTROS_AFECTADOS=@@ROWCOUNT    
+    
+SET @FECHAHORA = GETDATE()    
+    
+EXEC InsertaBitacoraProcesos @PROCESO, 'FINALIZADO', @FECHAHORA, @REGISTROS_AFECTADOS   

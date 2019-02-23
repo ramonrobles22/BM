@@ -1,0 +1,199 @@
+USE [DESPLDBAZPAN]
+GO
+/****** Object:  StoredProcedure [dbo].[BatchBazCifras]    Script Date: 02/22/2019 18:54:23 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER proc [dbo].[BatchBazCifras]        
+as        
+        
+        
+Declare @FechaIni date = (select CAST(DATEADD(day,-40, GETDATE())AS DATE))          
+Declare @FechaFin date = (SELECT CAST(GETDATE()-1 AS DATE))        
+Declare @año int=year(@FechaIni)        
+Declare @mes int=month(@FechaIni),        
+  @MON_MAX AS DECIMAL(18,2),          
+  @NUM_DIAS AS INT,          
+  @FH_PRO AS CHAR(10)          
+  DECLARE @FECHAHORA  AS DATETIME                                                    
+                       
+  SET @FECHAHORA = GETDATE()-1                        
+                        
+        
+delete from tbl_BAZCifras where dia between @FechaIni and @FechaFin and Descripcion<>'Movimientos Diaria'        
+        
+--Movimientos        
+insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)        
+ SELECT FH_OPERACION , COUNT(1) Total ,'Movimientos',year(FH_OPERACION),Month(FH_OPERACION)                                              
+ FROM tbl_movimientos WITH (NOLOCK)                                               
+ WHERE FH_OPERACION BETWEEN @FechaIni AND @FechaFin                                               
+ GROUP BY FH_OPERACION          
+ order by FH_OPERACION         
+        
+        
+----Alnova        
+--insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)         
+--SELECT T071_DAT_OPERATION , COUNT(1) Total ,'Alnova',year(T071_DAT_OPERATION),Month(T071_DAT_OPERATION)         
+--FROM prodpanama.MAZP.MAZP.BGDT071 WITH(NOLOCK)         
+--WHERE T071_DAT_OPERATION BETWEEN @FechaIni AND @FechaFin         
+--GROUP BY T071_DAT_OPERATION         
+--ORDER BY T071_DAT_OPERATION         
+        
+--Movimientos Diaria        
+delete from tbl_BAZCifras where dia =cast(@FECHAHORA as date) and Descripcion='Movimientos Diaria'        
+insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)        
+ SELECT FH_OPERACION , COUNT(1) Total ,'Movimientos Diaria',year(FH_OPERACION),Month(FH_OPERACION)                                              
+ FROM tbl_Movimientos_Diaria WITH (NOLOCK)                                               
+ WHERE cast(FH_OPERACION as date)=cast(@FECHAHORA as date)        
+ GROUP BY FH_OPERACION          
+ order by FH_OPERACION         
+         
+ --Movimientos Mensual        
+ insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)        
+ SELECT FH_OPERACION , COUNT(1) Total ,'Movimientos Mensual',year(FH_OPERACION),Month(FH_OPERACION)                                              
+ FROM tbl_Movimientos_Mensual WITH (NOLOCK)                                               
+ WHERE FH_OPERACION BETWEEN @FechaIni AND @FechaFin                                               
+ GROUP BY FH_OPERACION          
+ order by FH_OPERACION         
+       
+ ----Clientes Alnova      
+--  insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)       
+-- select DAT_CUSREG , COUNT(1) Total ,'Clientes Alnova',year(DAT_CUSREG),Month(DAT_CUSREG)      
+-- FROM prodpanama.MAZP.MAZP.pedt001 WITH(NOLOCK)      
+--WHERE DAT_CUSREG between  @FechaIni AND @FechaFin       
+-- GROUP BY DAT_CUSREG          
+-- order by DAT_CUSREG       
+       
+ insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)        
+ select Fh_Registro , COUNT(1) Total ,'Clientes',year(Fh_Registro),Month(Fh_Registro)      
+ from tbl_clientes with(nolock)where Fh_Registro between  @FechaIni AND @FechaFin       
+ GROUP BY Fh_Registro          
+ order by Fh_Registro       
+     
+ ----CuentasCLientes      
+-- insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)     
+--select     
+--CONVERT(DATE,dat_reg)AS 'Día', COUNT(1)as 'Total' ,'Cuentas Alnova',year(dat_reg),MONTH(dat_reg)     
+--FROM prodpanama.MAZP.MAZP.pedt008 a WITH(NOLOCK)    
+--where dat_reg between @FechaIni AND @FechaFin         
+--group by dat_reg        
+--order by 1     
+    
+ insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)     
+select      
+CONVERT(DATE,fh_apertura)AS 'Día', COUNT(1)as 'Total' ,'Cuentas',year(fh_apertura),MONTH(fh_apertura)     
+from tbl_CuentasClientes with(nolock)    
+where fh_apertura between @FechaIni AND @FechaFin         
+group by fh_apertura        
+order by 1        
+  
+----Transferencias Nacionales  
+insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)   
+SELECT CAST(FH_OPERACION AS DATE),COUNT(*),'Trans Nacionales',year(FH_OPERACION),month(FH_OPERACION)  
+FROM tbl_TransferenciasNacionales WITH(NOLOCK)  
+WHERE CAST(FH_OPERACION AS DATE) BETWEEN @FechaIni AND @FechaFin    
+group by CAST(FH_OPERACION AS DATE),year(FH_OPERACION),month(FH_OPERACION)  
+order by CAST(FH_OPERACION AS DATE)  
+  
+  
+--insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)   
+--SELECT  T004_DAT_OPERATION,COUNT(*),'Carga Trans Nacionales',year(T004_DAT_OPERATION),month(T004_DAT_OPERATION)  
+--FROM prodpanama.MAZP.MAZP.FEDT004 WITH(NOLOCK)  
+--WHERE  T004_DAT_OPERATION BETWEEN @FechaIni AND @FechaFin    
+--AND T004_FLG_OPEST IN ('T', 'I')  
+--group by T004_DAT_OPERATION,year(T004_DAT_OPERATION),month(T004_DAT_OPERATION)  
+--order by T004_DAT_OPERATION  
+  
+----Transferencias No interbancarias  
+insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)  
+SELECT CAST(FH_OPERACION AS DATE),COUNT(*),'Trans NoInterbancarias',year(FH_OPERACION),month(FH_OPERACION)  
+FROM tbl_transferenciasNoInterbancarias WITH(NOLOCK)  
+WHERE CAST(FH_OPERACION AS DATE) BETWEEN @FechaIni AND @FechaFin        
+group by CAST(FH_OPERACION AS DATE),year(FH_OPERACION),month(FH_OPERACION)  
+order by CAST(FH_OPERACION AS DATE),year(FH_OPERACION),month(FH_OPERACION)  
+  
+--insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)  
+--select SUBSTRING(t111_timestamp, 0,11),count(*),'Carga Trans NoInterbancarias',year(SUBSTRING(t111_timestamp, 0,11)),month(SUBSTRING(t111_timestamp, 0,11))  
+--FROM prodpanama.MAZP.MAZP.BGDT111 WITH(NOLOCK)   
+--WHERE SUBSTRING(t111_timestamp, 0,11) BETWEEN @FechaIni AND @FechaFin      
+--group by SUBSTRING(t111_timestamp, 0,11),year(SUBSTRING(t111_timestamp, 0,11)),month(SUBSTRING(t111_timestamp, 0,11))  
+--order by SUBSTRING(t111_timestamp, 0,11)    
+        
+---Atomo        
+        
+delete from tbl_BAZCifras where dia between @FechaIni and @FechaFin and Descripcion in('Atomo Semanal Query','Atomo Semanal Batch')        
+          
+SELECT @FechaIni = CONVERT(CHAR(10), FH_INI, 21), @FechaFin = CONVERT(CHAR(10), FH_FIN, 21), @FH_PRO = CONVERT(CHAR(10), FH_PRO, 21)          
+FROM tbl_fechasProceso WITH(NOLOCK)           
+WHERE id_pro = 'A'          
+         
+          
+SET @MON_MAX = ( SELECT X from tbl_reglasFijas WITH(NOLOCK) WHERE id = 1 )          
+SET @NUM_DIAS = ( SELECT Y from tbl_reglasFijas WITH(NOLOCK) WHERE id = 1 )          
+        
+DECLARE @AtomoSemanalTot TABLE (        
+ [IdPld] [int], [Nu_Cliente] [char](8), [Nu_Centro] [char](4), [Nu_Cuenta] [char](10),        
+ [Tp_CargoAbono] [char](1), [Total_importe] [decimal](18, 2), [Total_registros] [decimal](18, 0),        
+ [Divisa] [char](3), [Seleccion] [int], [Prioridad] [int], [Interfaz] [char](3),         
+ [Nu_movimiento] [decimal](9, 0),[Fh_Proceso] [datetime])        
+         
+Declare @AtomoSemanalDet TABLE (        
+ [IdPld] [decimal](18, 0) , [Nu_Movimiento] [decimal](9, 0) ,[Producto] [char](2) , [Subproducto] [char](4) ,        
+ [Tp_CargoAbono] [char](1) , [Mn_Importe] [decimal](18, 2) , [Divisa] [char](3) , [Fh_Operacion] [datetime] ,        
+ [HoraOperacion] [char](8) , [Fh_Proceso] [datetime] , [Centro_Operante] [char](4) ,[MovtoAnulado] [char](1) ,        
+ [Cod_operacion] [char](3) , [Operador] [char](10) , [Terminal] [char](8) )        
+        
+          
+        
+          
+ INSERT INTO @AtomoSemanalTot (Nu_Cliente, Nu_Centro, Nu_Cuenta, Tp_CargoAbono, Total_importe, Total_registros, Divisa, Seleccion, Prioridad, Interfaz, nu_movimiento, Fh_Proceso)          
+ SELECT           
+  0, a.nu_centro,a.nu_cuenta,tp_cargoAbono,SUM(ABS(mn_importe)),COUNT(1),divisa,0,0,'ALN',MAX(a.nu_movimiento),CONVERT(DATETIME, @FH_PRO, 21)          
+  FROM tbl_movimientos a WITH(NOLOCK)           
+  LEFT JOIN tbl_Catcodigosoperacion b WITH(NOLOCK) ON (a.cod_operacion = b.codigo)          
+  WHERE           
+   CONVERT(CHAR(10), a.fh_operacion, 121) BETWEEN @FechaIni  AND @FechaFin           
+   AND b.atmSem = 'S'          
+   AND divisa = 'PAB'          
+   AND MovtoAnulado = 'N'          
+  GROUP BY Nu_Centro, Nu_Cuenta, a.tp_cargoabono, divisa          
+  HAVING SUM(ABS(MN_Importe)) >= @MON_MAX          
+          
+ UPDATE a          
+  SET a.nu_cliente = b.nu_cliente          
+ FROM @AtomoSemanalTot a , tbl_cuentasClientes b WITH(NOLOCK)          
+ WHERE a.nu_centro = b.nu_Centro and a.nu_cuenta = b.nu_Cuenta and rol_asignado='T'          
+          
+          
+ INSERT INTO @AtomoSemanalDet (IdPld, Nu_Movimiento, Producto, Subproducto, Tp_CargoAbono, Mn_Importe, Divisa, Fh_Operacion, HoraOperacion, Fh_Proceso, Centro_Operante, MovtoAnulado, Cod_operacion, Operador, Terminal)          
+ SELECT           
+  c.idPLD,a.Nu_Movimiento,Producto,Subproducto,a.Tp_CargoAbono,ABS(MN_Importe),a.Divisa,a.FH_OPERACION,HoraOperacion,          
+  CONVERT(DATETIME, @FechaFin , 21),Centro_Operante,MovtoAnulado,Cod_Operacion,Operador, Terminal          
+ FROM tbl_movimientos a WITH(NOLOCK)           
+ LEFT JOIN tbl_catcodigosoperacion b WITH(NOLOCK) ON (a.cod_operacion = b.codigo)          
+ LEFT JOIN @AtomoSemanalTot c  ON (a.nu_centro = c.nu_centro and a.nu_cuenta = c.nu_cuenta and a.tp_cargoAbono = c.tp_cargoAbono and a.divisa = c.divisa and CONVERT(CHAR(10), fh_proceso, 21) = @FH_PRO)          
+ WHERE CONVERT(CHAR(10), a.Fh_Operacion,121) BETWEEN @FechaIni  AND @FechaFin           
+ AND b.atmSem = 'S'          
+ AND a.divisa = 'PAB'          
+ AND MovtoAnulado = 'N'          
+ AND EXISTS           
+ (          
+  SELECT *           
+  FROM @AtomoSemanalTot d          
+  WHERE a.nu_centro = d.nu_centro and a.nu_cuenta = d.nu_cuenta and a.tp_cargoAbono = d.tp_cargoAbono and CONVERT(CHAR(10), fh_proceso, 21) = @FH_PRO          
+ ) AND CONVERT(CHAR(10), c.fh_proceso, 21) = @FH_PRO          
+         
+         
+insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)        
+select cast(fh_operacion as date),count(*),'Atomo Semanal Query', year(fh_operacion),month(fh_operacion)        
+from @AtomoSemanalDet        
+group by cast(fh_operacion as date), year(fh_operacion),month(fh_operacion)        
+order by cast(fh_operacion as date)        
+        
+        
+insert into tbl_BAZCifras (Dia,Total,Descripcion,Año,Mes)        
+select cast(fh_operacion as date),count(*),'Atomo Semanal Batch',year(fh_operacion),month(fh_operacion)        
+from tbl_atomoSemanalDet where fh_operacion between @FechaIni and @FechaFin        
+group by cast(fh_operacion as date),year(fh_operacion),month(fh_operacion)        
+order by cast(fh_operacion as date)        

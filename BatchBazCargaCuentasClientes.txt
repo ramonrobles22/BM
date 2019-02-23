@@ -1,0 +1,75 @@
+USE [DESPLDBAZPAN]
+GO
+/****** Object:  StoredProcedure [dbo].[BatchBazCargaCuentasClientes]    Script Date: 02/22/2019 18:49:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[BatchBazCargaCuentasClientes] 
+AS
+
+DECLARE @REGISTROS_AFECTADOS AS INT
+DECLARE @FECHAHORA  AS DATETIME
+DECLARE @PROCESO AS CHAR(25)
+DECLARE @FH_INI AS DATETIME
+DECLARE @FH_FIN AS DATETIME
+DECLARE @FH_S_INI AS char(10)
+DECLARE @FH_S_FIN AS char(10)
+DECLARE @FH_TMP AS char(10)  
+
+--	SET @PROCESO = 'BatchBazCargaCuentasClientes'
+--	SET @FECHAHORA = GETDATE()
+--	SET @FH_INI =	 (SELECT FH_INI FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+--	SET @FH_FIN =	 (SELECT FH_FIN FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+--	SET @FH_S_INI =	 (SELECT convert(char(10), DATEADD(DAY,-5,FH_INI),121) FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+--	SET @FH_S_FIN =	 (SELECT convert(char(10), FH_INI,121) FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+
+--EXEC InsertaBitacoraProcesos @PROCESO, 'INICIADO', @FECHAHORA, 0
+
+
+--set @FH_TMP=@FH_S_INI
+--WHILE @FH_TMP<=@FH_S_FIN
+--BEGIN
+
+--	INSERT INTO tbl_CuentasClientes (Nu_Centro, Nu_Cuenta, Nu_Cliente, Fh_Apertura, St_Cuenta, Rol_Asignado)
+--	SELECT 
+--		BRN_OPEN,
+--		COD_PRODSERV + NUM_ACCOUNT,
+--		NUM_CUS,
+--		DAT_REG,
+--		'',
+--		KEY_PARTIC
+--	FROM prodpanama.MAZP.MAZP.pedt008 a WITH(NOLOCK)
+--	WHERE NOT EXISTS
+--	(
+--		SELECT '1' 
+--		FROM tbl_CuentasClientes b WITH(NOLOCK) 
+--		WHERE a.BRN_OPEN = b.nu_centro AND 
+--			  LTRIM(RTRIM(a.COD_PRODSERV))+LTRIM(RTRIM(a.NUM_ACCOUNT)) = LTRIM(RTRIM(b.nu_cuenta)) AND
+--			  a.NUM_CUS = b.nu_cliente	
+--	) 
+--	AND CONVERT(CHAR(10),DATE_STP,21)=@FH_TMP
+
+--SET @FH_TMP=convert(char(10), DATEADD(DAY,1,@FH_TMP),121)
+
+--END
+	
+--	SET @REGISTROS_AFECTADOS = @@ROWCOUNT
+
+--	UPDATE tbl_CuentasClientes
+--	SET 
+--		NU_CENTRO = SUBSTRING(dta_afterupd,13,4),
+--		NU_CUENTA  = (SUBSTRING(dta_afterupd,17,2)+ SUBSTRING(dta_afterupd,19,8)),
+--		ST_CUENTA = SUBSTRING(dta_afterupd,64,1),
+--		ROL_ASIGNADO = SUBSTRING(dta_afterupd,31,1)
+--	FROM prodpanama.MAZP.MAZP.pedt010 A WITH(NOLOCK)
+--	WHERE 
+--	NU_CLIENTE = A.KEY_SORT  
+--	AND A.cod_table = 'PEDT008' 
+--	AND A.COD_OPE = 'M'
+--	AND SUBSTRING(A.dta_beforeupd,31,1) = rol_asignado
+--	AND NU_CUENTA = SUBSTRING(A.dta_beforeupd,17,2) + SUBSTRING(dta_beforeupd,19,8)
+--	AND NU_CENTRO = SUBSTRING(A.dta_beforeupd,13,4)
+	
+--SET @FECHAHORA = GETDATE()
+--EXEC InsertaBitacoraProcesos @PROCESO, 'FINALIZADO', @FECHAHORA, @REGISTROS_AFECTADOS

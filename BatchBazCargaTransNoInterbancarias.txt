@@ -1,0 +1,74 @@
+USE [DESPLDBAZPAN]
+GO
+/****** Object:  StoredProcedure [dbo].[BatchBazCargaTransNoInterbancarias]    Script Date: 02/22/2019 18:54:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[BatchBazCargaTransNoInterbancarias]
+AS
+
+DECLARE @REGISTROS_AFECTADOS AS INT
+DECLARE @FECHAHORA  AS DATETIME
+DECLARE @PROCESO AS CHAR(25)
+DECLARE @FH_INI AS DATETIME
+DECLARE @FH_FIN AS DATETIME
+
+--	SET @PROCESO = 'BatchBazCargaTransNoInterbancarias'	
+--	SET @FECHAHORA = GETDATE()
+--	SET @FH_INI =	 (SELECT FH_INI FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+--	SET @FH_FIN =	 (SELECT FH_FIN FROM tbl_FechasProceso WITH(NOLOCK) WHERE ID_PRO = 'D')
+
+--EXEC InsertaBitacoraProcesos @PROCESO, 'INICIADO', @FECHAHORA, 0	
+	
+--INSERT INTO tbl_transferenciasNoInterbancarias (Nu_ClienteOrd, Nu_CentroOrd, Nu_CuentaOrd, Nu_ClienteBen, Nu_CentroBen, Nu_CuentaBen, Mn_Importe, Fh_Operacion, 
+--													Divisa, Nu_MovimientoOrd, Nu_MovimientoBen, Cod_OperacionOrd, Cod_OperacionBen, ObservacionesOrd, 
+--													ObservacionesBen, Status, Fh_proceso)
+--SELECT 
+--	'', 
+--	SUBSTRING(t111_acc_credit, 5, 4), 
+--	SUBSTRING(t111_acc_credit, 11, 10), 
+--	'', 
+--	SUBSTRING(t111_acc_debit, 5, 4), 
+--	SUBSTRING(t111_acc_debit, 11, 10), 
+--	t111_amt, 
+--	SUBSTRING(t111_timestamp, 0,11),
+--	t111_fcc as Divisa, 
+--	t111_mov_credit,
+--	t111_mov_debit, 
+--	'',
+--	'',
+--	t111_ref_debit, 
+--	t111_ref_credit, 
+--	t111_status_mov,
+--	getDate()[FhProceso]
+--FROM prodpanama.MAZP.MAZP.BGDT111 WITH(NOLOCK) 
+--WHERE SUBSTRING(t111_timestamp, 0,11) BETWEEN @FH_INI and  @FH_FIN
+
+
+--UPDATE a
+--SET a.nu_clienteOrd = b.nu_cliente
+--FROM tbl_transferenciasNoInterbancarias a WITH(NOLOCK) 
+--LEFT JOIN tbl_cuentasClientes b WITH(NOLOCK) ON (a.nu_centroOrd = b.nu_centro and a.nu_cuentaOrd =b.nu_cuenta)
+
+
+--UPDATE a
+--SET a.nu_clienteBen = b.nu_cliente
+--FROM tbl_transferenciasNoInterbancarias a WITH(NOLOCK) 
+--LEFT JOIN tbl_cuentasClientes b WITH(NOLOCK) ON (a.nu_centroBen = b.nu_centro and a.nu_cuentaBen =b.nu_cuenta)
+
+--UPDATE a SET a.cod_operacionOrd = cod_operacion
+--FROM tbl_transferenciasNoInterbancarias a WITH(NOLOCK) 
+--LEFT JOIN tbl_Movimientos_Diaria b WITH(NOLOCK) 
+--ON (a.nu_centroOrd = b.nu_centro and a.nu_cuentaOrd = b.nu_cuenta and a.nu_movimientoOrd = b.nu_movimiento and a.fh_operacion = b.fh_operacion)
+
+--UPDATE a
+--SET a.cod_operacionBen = cod_operacion
+--FROM tbl_transferenciasNoInterbancarias a WITH(NOLOCK) 
+--LEFT JOIN tbl_Movimientos_Diaria b WITH(NOLOCK) 
+--ON (a.nu_centroBen = b.nu_centro and a.nu_cuentaBen = b.nu_cuenta 
+--	and a.nu_movimientoBen = b.nu_movimiento and a.fh_operacion = b.fh_operacion)
+
+--	SET @REGISTROS_AFECTADOS = @@ROWCOUNT
+--	SET @FECHAHORA = GETDATE()
+--	EXEC InsertaBitacoraProcesos @PROCESO, 'FINALIZADO', @FECHAHORA, @REGISTROS_AFECTADOS

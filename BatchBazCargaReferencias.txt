@@ -1,0 +1,68 @@
+USE [DESPLDBAZPAN]
+GO
+/****** Object:  StoredProcedure [dbo].[BatchBazCargaReferencias]    Script Date: 02/22/2019 18:51:33 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[BatchBazCargaReferencias]  
+AS  
+  
+DECLARE @REGISTROS_AFECTADOS AS INT  
+DECLARE @FECHAHORA  AS DATETIME  
+DECLARE @PROCESO AS CHAR(25)  
+SET @PROCESO = 'BatchBazCargaReferencias'  
+SET @FECHAHORA = GETDATE()  
+  
+EXEC InsertaBitacoraProcesos @PROCESO, 'INICIADO', @FECHAHORA, 0  
+  
+ INSERT INTO tbl_referencias (Nu_Cliente, R1_Nombre, R1_Ap_Paterno, R1_Ap_Materno, R1_Calle,   
+    R1_Num_Int, R1_Num_Ext, R1_Barrio, R1_Corregimiento, R1_Distrito,   
+    R1_Provincia, R1_Telefono, R1_Email, R2_Nombre, R2_Ap_Paterno, R2_Ap_Materno,   
+    R2_Calle, R2_Num_Int, R2_Num_Ext, R2_Barrio, R2_Corregimiento, R2_Distrito,   
+    R2_Provincia, R2_Telefono, R2_Email, Fh_Registro, R1_Congelado, R2_Congelado,   
+    R1_Fh_Baja, R2_Fh_Baja, Empleado, Terminal, Sucursal_Mod, Fh_Batch)  
+ SELECT  
+		NUM_CUS,		
+		REF1_NAME,
+		REF1_SURNAME,
+		REF1_SCDSURNAME,
+		substring(REF1_txt_adr,1,25) AS CALLE,
+		substring(REF1_txt_adr,26,5) AS NUM_INT,
+		substring(REF1_txt_adr,31,5) AS NUM_EXT,
+		substring(REF1_txt_adr,36,55) AS BARRIO,
+		substring(REF1_des_comprcty,1,5) AS CORREGIMIENTO,
+		substring(REF1_des_comprcty,6,20) AS DISTRITO,
+		substring(REF1_des_comprcty,26,35) AS PROVINCIA,
+		REF1_NUM_TPH,		
+		REF1_E_MAIL,	
+		REF2_NAME,
+		REF2_SURNAME,
+		REF2_SCDSURNAME,
+		substring(REF2_txt_adr,1,25) AS R2_CALLE,                                                                                                                                                    
+		substring(REF2_txt_adr,26,5) AS R2_NUM_INT,                                                                                                                                                  
+		substring(REF2_txt_adr,31,5) AS R2_NUM_EXT,	                                                                                                                                          
+		substring(REF2_txt_adr,36,55) AS R2_BARRIO,
+		substring(REF2_des_comprcty,1,5) AS R2_CORREGIMIENTO,                                                                                                                                        
+		substring(REF2_des_comprcty,6,20) AS R2_DISTRITO,                                                                                                                                            
+		substring(REF2_des_comprcty,26,35) AS R2_PROVINCIA,                                                                                                                                                                                                          
+                                                                                                                          
+		REF2_NUM_TPH,				
+		REF2_E_MAIL,					
+		convert(datetime, DAT_REG) as DAT_REG1,				
+		NUM_FREE1,
+		NUM_FREE2,
+		convert(datetime,FLG_FREE1) as FLG_FREE11,				
+		convert(datetime,FLG_FREE2) as FLG_FREE21,			
+		LMODUSER,			
+		TERM_LASTMOD,
+		BRN_LMODP,
+		CONVERT(CHAR(10),DATE_STP,21) as DATE_STP  
+ FROM pedt029 with(nolock)  
+ LEFT JOIN tbl_referencias WITH(NOLOCK)  
+ ON NUM_CUS = NU_CLIENTE  
+ WHERE NU_CLIENTE IS NULL  
+   
+ SET @REGISTROS_AFECTADOS = @@ROWCOUNT  
+ SET @FECHAHORA = GETDATE()  
+ EXEC InsertaBitacoraProcesos @PROCESO, 'FINALIZADO', @FECHAHORA, @REGISTROS_AFECTADOS
